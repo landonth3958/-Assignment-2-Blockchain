@@ -4,13 +4,13 @@
 #include <windows.h>
 #include "user.h"
 
-struct User* add(struct User * head, char* Username) {
-	Sleep((rand() % 10 + 1) * 1000);
+struct User* add(struct User* head, char* Username) {
+    Sleep((rand() % 10 + 1) * 1000);
 
-	struct User* newHead = (struct User*)malloc(sizeof(struct User));
-	strcpy(newHead->Username, Username);
-	time(&(newHead->loginTime));
-	newHead->localLoginTime = *localtime(&(newHead->loginTime));
+    struct User* newHead = (struct User*)malloc(sizeof(struct User));
+    strcpy(newHead->Username, Username);
+    time(&(newHead->loginTime));
+    newHead->localLoginTime = *localtime(&(newHead->loginTime));
     newHead->next = head;
     if (head == NULL) {
         newHead->hash.hash0 = 0;
@@ -20,32 +20,32 @@ struct User* add(struct User * head, char* Username) {
         newHead->hash.hash4 = 0;
     }
     else {
-       
+
         generateDigest(&(newHead->hash), head);
     }
-    
+
     return newHead; // Logical error: returns the wrong node
 }
 
 void printLog(struct User* head) {
-	struct User* iterator = head;
-	printf("********** Access Log **********\n");
-	while (iterator != NULL) {
-		printf("Username: %-20s\t", iterator->Username);
+    struct User* iterator = head;
+    printf("********** Access Log **********\n");
+    while (iterator != NULL) {
+        printf("Username: %-20s\t", iterator->Username);
 
-		printf("Last Login: %02d/%02d/%04d %02d:%02d:%02d\t",
-			iterator->localLoginTime.tm_mon + 1,
-			iterator->localLoginTime.tm_mday,
-			iterator->localLoginTime.tm_year + 1900,
-			iterator->localLoginTime.tm_hour,
-			iterator->localLoginTime.tm_min,
-			iterator->localLoginTime.tm_sec);
+        printf("Last Login: %02d/%02d/%04d %02d:%02d:%02d\t",
+            iterator->localLoginTime.tm_mon + 1,
+            iterator->localLoginTime.tm_mday,
+            iterator->localLoginTime.tm_year + 1900,
+            iterator->localLoginTime.tm_hour,
+            iterator->localLoginTime.tm_min,
+            iterator->localLoginTime.tm_sec);
 
-		printf("\tHash: ");
+        printf("\tHash: ");
         printDigest(iterator->hash);
         iterator = iterator->next;
 
-	}
+    }
 }
 
 void printUser(struct User* user) {
@@ -75,7 +75,7 @@ void verify(struct User* curr) {
 
     printf("******** Verifying Log *********\n\n");
 
-    struct Block* prev = NULL;
+    struct User* prev = NULL;
     if (curr != NULL) {
         prev = curr->next;
     }
@@ -86,49 +86,65 @@ void verify(struct User* curr) {
     printf("\n");
 
     while (prev) {
-        unsigned char* computedHash = NULL;
+        struct Digest prev_digest_computed;
+        generateDigest(&prev_digest_computed, curr->next); // Logical error: comparing wrong blocks
 
-        if (prev != NULL) {
-            struct Digest prev_digest_computed;
-            generateDigest(&prev_digest_computed, curr->next); // Logical error: comparing wrong blocks
-
-            if (digest_equal(prev_digest_computed, curr->hash)) { // Logical error: comparing wrong hashes
-                printf("User %d passed\n", height);
-                printf("\t%-20s", "User Data:");
-                printUser(curr->next);
-                printf("\t%-20s", "Saved Hash:");
-                printDigest(curr->hash);
-                printf("\t%-20s", "Calculated Hash:");
-                printDigest(prev_digest_computed);
-                printf("\n\n");
-            }
-            else {
-                printf("User %d failed\n", height);
-                printf("\t%-20s", "User Data:");
-                printUser(curr->next);
-                printf("\t%-20s", "Saved Hash:");
-                printDigest(curr->hash);
-                printf("\t%-20s", "Calculated Hash:");
-                printDigest(prev_digest_computed);
-                printf("\n\n");
-                return;
-            }
+        if (digest_equal(prev_digest_computed, curr->hash)) { // Logical error: comparing wrong hashes
+            printf("User %d passed\n", height);
+            printf("\t%-20s", "User Data:");
+            printUser(curr->next);
+            printf("\t%-20s", "Saved Hash:");
+            printDigest(curr->hash);
+            printf("\t%-20s", "Calculated Hash:");
+            printDigest(prev_digest_computed);
+            printf("\n\n");
+        }
+        else {
+            printf("User %d failed\n", height);
+            printf("\t%-20s", "User Data:");
+            printUser(curr->next);
+            printf("\t%-20s", "Saved Hash:");
+            printDigest(curr->hash);
+            printf("\t%-20s", "Calculated Hash:");
+            printDigest(prev_digest_computed);
+            printf("\n\n");
+            return;
         }
         curr = prev; // Logical error: traversing the list incorrectly
         prev = curr->next;
         height++;
     }
 
-    printf("User %d, nothing to verify\n", height);
-
-    printf("\t%-20s", "User Data:");
-    printUser(curr);
-
-    printf("\t%-20s", "Saved Hash:");
-    printDigest(curr->hash);
-    printf("\n\n");
-
     printf("**********************************\n");
     printf("* All blocks have been verified. *\n");
     printf("**********************************\n");
+}
+
+int getLength(struct User* head) {
+    int count = 0;
+    while (head != NULL) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+struct User* getNodes(struct User* head, int index) {
+    while (head != NULL && index > 0) {
+        head = head->next;
+        index--;
+    }
+    return head;
+}
+
+void testNodeHash(struct User* head) {
+    int count = 0;
+    while (head != NULL) {
+        count++;
+        struct Digest calculated;
+        generateDigest(&calculated, head);
+        printf("User %d calculated hash: ", count);
+        printDigest(calculated);
+        head = head->next;
+    }
 }

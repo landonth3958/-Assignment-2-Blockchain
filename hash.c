@@ -36,7 +36,7 @@ int digest_equal(struct Digest digest1, struct Digest digest2) {
         (digest1.hash2 == digest2.hash2) &&
         (digest1.hash3 == digest2.hash3) &&
         (digest1.hash4 == digest2.hash4));
-    
+
 }
 
 void printDigest(struct Digest digest) {

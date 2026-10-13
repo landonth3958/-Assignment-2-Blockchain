@@ -24,3 +24,7 @@ void printUser(struct User*);
 void printLog(struct User*);
 void generateDigest(struct Digest* digest, struct User* User);
 void verify(struct User*);
+
+int getLength(struct User*);
+struct User* getNode(struct User* head, int index);
+void testNodeHash(struct User* head);
