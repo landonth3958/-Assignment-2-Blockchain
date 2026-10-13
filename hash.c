@@ -41,3 +41,53 @@ int digest_equal(struct Digest digest1, struct Digest digest2) {
 void printDigest(struct Digest digest) {
     printf("%d %d %d %d %d\n", digest.hash0, digest.hash1, digest.hash2, digest.hash3, digest.hash4);
 }
+
+
+
+//SSHA2 algorithm generated with Claude AI
+#include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Returns a heap-allocated 40-character hex string (plus null terminator).
+ * The caller must free() it. Returns NULL on allocation failure
+ * or if msg is NULL while length > 0. */
+char* SSHA2(const unsigned char* msg, size_t length)
+{
+    if (msg == NULL && length > 0)
+        return NULL;
+
+    /* Initial state (SHA-1 style IVs, since the diagram doesn't specify them) */
+    uint32_t A = 0x67452301u;
+    uint32_t B = 0xEFCDAB89u;
+    uint32_t C = 0x98BADCFEu;
+    uint32_t D = 0x10325476u;
+    uint32_t E = 0xC3D2E1F0u;
+
+    for (size_t i = 0; i < length; i++) {
+        uint32_t shr2 = B >> 2;
+        uint32_t shr1 = B >> 1;
+
+        uint32_t newA = E;
+        uint32_t newB = A;
+        uint32_t newC = shr2 + E;
+        uint32_t newD = shr2 ^ shr1;
+        uint32_t newE = shr1 + ((B & C) | (D & C)) + (uint32_t)msg[i];
+
+        A = newA;
+        B = newB;
+        C = newC;
+        D = newD;
+        E = newE;
+    }
+
+    char* out = (char*)malloc(41);
+    if (out == NULL)
+        return NULL;
+
+    snprintf(out, 41, "%08x%08x%08x%08x%08x",
+        (unsigned)A, (unsigned)B, (unsigned)C, (unsigned)D, (unsigned)E);
+
+    return out;
+}
