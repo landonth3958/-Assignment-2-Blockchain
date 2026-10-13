@@ -8,17 +8,16 @@ unsigned char* SSHA(const unsigned char* msg, size_t length) {
     unsigned char E = 76;
 
     for (int i = 0; i < length; i++) {
-        for (int round = 0; round < 8; round++) {
-            unsigned char g = (B & C) | (C & D);
-            unsigned char old_A = A;
-            A = (A + B) % 256;
-            B = (B + C) % 256;
-            E = ((g + msg[i] + B) * 3) % 256;
-            D = (A ^ B) % 256;
-            C = (A + E) % 256;
-            A = E;
-            B = old_A;
-        }
+        unsigned char g = (B & C) | (C & D);
+        unsigned char old_A = A;
+        unsigned char old_B = B;
+        unsigned char old_E = E;
+
+        A = old_E;
+        B = old_A;
+        C = (old_B >> 2) + old_E;
+        D = (old_B >> 2) ^ (old_B >> 1);
+        E = (g + (old_B >> 1) + msg[i]);
     }
 
     unsigned char* digest = (unsigned char*)malloc(DIGEST_SIZE * sizeof(unsigned char));
@@ -26,7 +25,7 @@ unsigned char* SSHA(const unsigned char* msg, size_t length) {
     digest[1] = B;
     digest[2] = C;
     digest[3] = D;
-    digest[4] = D;
+    digest[4] = E;
     return digest;
 }
 
